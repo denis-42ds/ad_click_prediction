@@ -7,9 +7,10 @@
 ## Описание рабочих файлов и директорий:
 - [ad_click_prediction.ipynb](https://github.com/denis-42ds/ad_click_prediction/blob/development/ad_click_prediction.ipynb) - рабочая тетрадь с исследованиями, визуализациями и текстовыми описаниями
 - [requirements.txt](https://github.com/denis-42ds/ad_click_prediction/blob/development/requirements.txt) - список зависимостей, необходимых для работы проекта, а также их версии
+- [research_functions.py](https://github.com/denis-42ds/ad_click_prediction/blob/development/research_functions.py) - скрипт с функциями для проведения исследования
 - [run_jupyter.sh](https://github.com/denis-42ds/ad_click_prediction/blob/development/run_jupyter.sh) - скрипт для запуска тетрадки с исследованием
-- [assets](https://github.com/denis-42ds/ad_click_prediction.git) - директория с сохранёнными артефактами
-- [app](https://github.com/denis-42ds/ad_click_prediction.git) - директория с приложением
+- [assets](https://github.com/denis-42ds/ad_click_prediction/tree/development/assets) - директория с сохранёнными артефактами
+- [app](https://github.com/denis-42ds/ad_click_prediction/tree/development/app) - директория с приложением
 
 ## Установка зависимостей и просмотр исследования
 ```Bash
