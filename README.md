@@ -5,8 +5,9 @@
 ## Заказчик: natiscope
 
 ## Описание рабочих файлов и директорий:
-- [ad_click_prediction.ipynb](https://github.com/denis-42ds/ad_click_prediction.git) - рабочая тетрадь с исследованиями, визуализациями и текстовыми описаниями
-- [requirements.txt](https://github.com/denis-42ds/ad_click_prediction.git) - список зависимостей, необходимых для работы проекта, а также их версии
+- [ad_click_prediction.ipynb](https://github.com/denis-42ds/ad_click_prediction/blob/development/ad_click_prediction.ipynb) - рабочая тетрадь с исследованиями, визуализациями и текстовыми описаниями
+- [requirements.txt](https://github.com/denis-42ds/ad_click_prediction/blob/development/requirements.txt) - список зависимостей, необходимых для работы проекта, а также их версии
+- [run_jupyter.sh](https://github.com/denis-42ds/ad_click_prediction/blob/development/run_jupyter.sh) - скрипт для запуска тетрадки с исследованием
 - [assets](https://github.com/denis-42ds/ad_click_prediction.git) - директория с сохранёнными артефактами
 - [app](https://github.com/denis-42ds/ad_click_prediction.git) - директория с приложением
 
@@ -15,12 +16,14 @@
 git clone https://github.com/denis-42ds/ad_click_prediction.git
 cd ad_click_prediction
 pip install -r requirements.txt
-jupyter lab
+sh run_jupyter.sh
 ```
 
 ## Запуск FastAPI-микросервиса
 
 ```
+git clone https://github.com/denis-42ds/ad_click_prediction.git
+cd ad_click_prediction
 docker compose up --build
 ```
 
@@ -47,7 +50,10 @@ docker compose up --build
 - Заключение о проделанном исследовании
 
 ## Используемые инструменты
-- python: pandas, seaborn
+- python: pandas, seaborn, matplotlib, phik, category_encoders
+- mlflow;
+- postgresql;
+- bash
 
 ## Заключение:
 - 
