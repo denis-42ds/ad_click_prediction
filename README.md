@@ -51,7 +51,7 @@ docker compose up --build
 - Заключение о проделанном исследовании
 
 ## Используемые инструменты
-- python: pandas, seaborn, matplotlib, phik, category_encoders
+- python: pandas, seaborn, matplotlib, phik, category_encoders, LightGBM;
 - mlflow;
 - postgresql;
 - bash

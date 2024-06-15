@@ -1,16 +1,19 @@
 import os
 import mlflow
+import optuna
 import pandas as pd
 import seaborn as sns
+import lightgbm as lgb
 import psycopg2 as psycopg
 import matplotlib.pyplot as plt
 
 from dotenv import load_dotenv
+from autofeat import AutoFeatClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_curve, roc_auc_score, f1_score, confusion_matrix
-from sklearn.model_selection import train_test_split, StratifiedKFold, cross_validate
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_validate, RandomizedSearchCV
 
 ASSETS_DIR = 'assets'
 RANDOM_STATE = 42
@@ -54,31 +57,52 @@ def data_review(dataset):
         unique_values = dataset[column].nunique()
         print(f"Количество уникальных записей в признаке '{column}': {unique_values}")
 
-def data_preprocessing(test_size=0.1, dataset=None, features=None, target=None, add_features=False):
+def data_preprocessing(test_size=0.1, dataset=None, features=None, target=None, transformations=None):
     X_train, X_test, y_train, y_test = train_test_split(dataset[features],
                                                         dataset[target],
                                                         test_size=test_size,
                                                         random_state=RANDOM_STATE,
                                                         stratify=dataset[target])
+    if transformations is not None:
+        afc = AutoFeatClassifier(feateng_steps=1, max_gb=2, transformations=transformations, n_jobs=-1)
+        X_train = afc.fit_transform(X_train, y_train)
+        X_test = afc.transform(X_test)
+        print('Автоматическая генерация признаков завершена')
+
     scaler = StandardScaler()
     X_train_scl = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.columns, index=X_train.index)
     X_test_scl = pd.DataFrame(scaler.transform(X_test), columns=X_test.columns, index=X_test.index)
-    if add_features:
-        transformations = transformations
-        afc = AutoFeatClassifier(categorical_cols=categorical_features, feateng_steps=1, max_gb=2, transformations=transformations, n_jobs=-1)
-        X_train_afc = afc.fit_transform(X_train, y_train)
-        X_test_afc = afc.transform(X_test)
-        print(f'размерности выборок: {X_train_afc.shape, X_test_afc.shape, y_train.shape, y_test.shape}')
-        return X_train_afc, X_test_afc, y_train, y_test
-    else:
-        print(f'размерности выборок: {X_train_scl.shape, X_test_scl.shape, y_train.shape, y_test.shape}')
-        return X_train_scl, X_test_scl, y_train, y_test
 
-def model_fitting(model_name=None, features_train=None, target_train=None, n_splits=None, params=None):
+    print(f'размерности выборок: {X_train_scl.shape, X_test_scl.shape, y_train.shape, y_test.shape}')
+    return X_train_scl, X_test_scl, y_train, y_test
+
+def model_fitting(model_name=None, features_train=None, target_train=None, n_splits=None, params=None, tune_hyperparams=False):
+    if tune_hyperparams:
+        if model_name == 'Baseline' or model_name == 'Logistic Regression':
+            model = LogisticRegression(**params)
+        elif model_name == 'Random Forest':
+            model = RandomForestClassifier(**params)
+        elif model_name == 'LGBM':
+            model = lgb.LGBMClassifier(**params)
+        cv_strategy = StratifiedKFold(n_splits=n_splits)
+        cv = RandomizedSearchCV(estimator=model,
+                                param_distributions=params,
+                                n_iter=n_splits,
+                                cv=StratifiedKFold(n_splits=n_splits),
+                                n_jobs=-1,
+                                scoring='roc_auc')
+        clf = cv.fit(features_train, target_train)
+        best_params = clf.best_params_
+        print(f"Лучшие гиперпараметры: {best_params}")
+    else:
+        best_params = params
+
     if model_name == 'Baseline' or model_name == 'Logistic Regression':
-        model = LogisticRegression(**params)
+        model = LogisticRegression(**best_params)
     elif model_name == 'Random Forest':
-        model = RandomForestClassifier(**params)
+        model = RandomForestClassifier(**best_params)
+    elif model_name == 'LGBM':
+        model = lgb.LGBMClassifier(**best_params)
     model.fit(features_train.values, target_train.values)
     cv_strategy = StratifiedKFold(n_splits=n_splits)
     cv_res = cross_validate(model,
@@ -125,8 +149,8 @@ def model_logging(signature=None, input_example=None, metadata=None, metrics=Non
         run_id = run.info.run_id
         mlflow.log_params(params)
         mlflow.log_metrics(metrics)
-        model_info = mlflow.sklearn.log_model(
-            sk_model=model,
+        model_info = mlflow.lightgbm.log_model(  # sklearn
+            lgb_model=model,  # sk_model
             artifact_path='artifacts',
             pip_requirements=pip_requirements,
             signature=signature,
@@ -172,12 +196,13 @@ def models_comparison(save_figure=False):
             print('Models and their metrics:')
             models_data = pd.DataFrame(table_data, columns=table_columns)
             display(models_data)
-    plt.figure(figsize=(12, 6))
+    models_data['model_name_version'] = models_data['model_name'] + '_' + models_data['model_version'].astype(str)
+    plt.figure(figsize=(14, 6))
     metrics = ['f1_score', 'roc_auc_score']
 
     for i, metric in enumerate(metrics):
         plt.subplot(1, 3, i+1)
-        sns.barplot(x='model_name', y=metric, data=models_data)
+        sns.barplot(x='model_name_version', y=metric, data=models_data)
         plt.title(f'Comparison of {metric.upper()}')
         plt.xticks(rotation=45, ha='right')
 
