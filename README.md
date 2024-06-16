@@ -10,7 +10,7 @@
 - [research_functions.py](https://github.com/denis-42ds/ad_click_prediction/blob/development/research_functions.py) - скрипт с функциями для проведения исследования
 - [run_jupyter.sh](https://github.com/denis-42ds/ad_click_prediction/blob/development/run_jupyter.sh) - скрипт для запуска тетрадки с исследованием
 - [assets](https://github.com/denis-42ds/ad_click_prediction/tree/development/assets) - директория с сохранёнными артефактами
-- [app](https://github.com/denis-42ds/ad_click_prediction/tree/development/app) - директория с приложением
+- [services](https://github.com/denis-42ds/ad_click_prediction/tree/development/services) - директория с приложением
 
 ## Установка зависимостей и просмотр исследования
 ```Bash
@@ -46,8 +46,8 @@ docker compose up --build
 - Построение baseline
 - Обучение нескольких моделей
 - Выбор лучшей модели
-- Проверка лучшей модели на отложенной выборке
 - Проверка важности признаков
+- Проверка лучшей модели на отложенной выборке
 - Заключение о проделанном исследовании
 
 ## Используемые инструменты

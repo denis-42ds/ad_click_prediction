@@ -210,3 +210,27 @@ def models_comparison(save_figure=False):
     if save_figure:
         plt.savefig(os.path.join(ASSETS_DIR, f'Comparison of model metrics.png'))
     plt.show()
+
+def feature_importance(model_name='LGBM', model=None, features=None, save_figure=False):
+        if model_name == 'LGBM':
+            lgb.plot_importance(model,
+                                ax=None,
+                                height=0.2,
+                                xlim=None,
+                                ylim=None,
+                                title='Feature importance',
+                                xlabel='Feature importance',
+                                ylabel='Features',
+                                importance_type='auto',
+                                max_num_features=None,
+                                ignore_zero=True,
+                                figsize=None,
+                                dpi=None,
+                                grid=True,
+                                precision=3)
+        else:
+            explainer = shap.TreeExplainer(model, feature_perturbation="tree_path_dependent")
+            shap_values = explainer.shap_values(features)
+            shap.summary_plot(shap_values, features, plot_size=(14, 5))
+        if save_figure:
+            plt.savefig(os.path.join(ASSETS_DIR, 'Features importance.png'))
