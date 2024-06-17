@@ -211,26 +211,42 @@ def models_comparison(save_figure=False):
         plt.savefig(os.path.join(ASSETS_DIR, f'Comparison of model metrics.png'))
     plt.show()
 
-def feature_importance(model_name='LGBM', model=None, features=None, save_figure=False):
-        if model_name == 'LGBM':
-            lgb.plot_importance(model,
-                                ax=None,
-                                height=0.2,
-                                xlim=None,
-                                ylim=None,
-                                title='Feature importance',
-                                xlabel='Feature importance',
-                                ylabel='Features',
-                                importance_type='auto',
-                                max_num_features=None,
-                                ignore_zero=True,
-                                figsize=None,
-                                dpi=None,
-                                grid=True,
-                                precision=3)
-        else:
-            explainer = shap.TreeExplainer(model, feature_perturbation="tree_path_dependent")
-            shap_values = explainer.shap_values(features)
-            shap.summary_plot(shap_values, features, plot_size=(14, 5))
-        if save_figure:
-            plt.savefig(os.path.join(ASSETS_DIR, 'Features importance.png'))
+def test_best_model(model_name=None, model=None, features_train=None, features_test=None, target_test=None, save_figure=False):
+    y_pred_proba = model.predict_proba(features_test.values)[:, 1]
+    roc_auc_value = roc_auc_score(target_test, y_pred_proba)
+    y_pred = model.predict(features_test.values)
+    f1_value = f1_score(target_test, y_pred)
+        
+    print(f"ROC-AUC на тестовой выборке: {round(roc_auc_value, 2)}")
+    print(f"F1 на тестовой выборке: {round(f1_value, 2)}")
+
+    fig, axs = plt.subplots(1, 2)
+    fig.tight_layout(pad=1.0)
+    fig.set_size_inches(18, 6, forward=True)
+
+    sns.heatmap(confusion_matrix(target_test, y_pred.round()), annot=True, fmt='3.0f', cmap='crest', ax=axs[0])
+    axs[0].set_title('Test confusion matrix', fontsize=16, y=1.02)
+
+    if model_name == 'LGBM':
+        lgb.plot_importance(model,
+                            ax=axs[1],
+                            height=0.2,
+                            xlim=None,
+                            ylim=None,
+                            title='Feature importance',
+                            xlabel='Feature importance',
+                            ylabel='Features',
+                            importance_type='auto',
+                            max_num_features=None,
+                            ignore_zero=True,
+                            figsize=None,
+                            dpi=None,
+                            grid=True,
+                            precision=3)
+    else:
+        explainer = shap.TreeExplainer(model, feature_perturbation="tree_path_dependent")
+        shap_values = explainer.shap_values(features_train)
+        shap.summary_plot(shap_values, features_train, plot_size=(14, 5), show=False, plot_type='bar', ax=axs[1])
+    if save_figure:
+        plt.savefig(os.path.join(ASSETS_DIR, 'Test confusion matrix and Features importance.png'))
+    plt.show()
