@@ -1,7 +1,9 @@
 FROM python:3.11-slim
 
-COPY ./app ./apart_cost_app
-WORKDIR /apart_cost_app
+RUN apt-get update && apt-get install -y libgomp1
+
+COPY ./app ./app
+WORKDIR /app
 COPY requirements.txt .
 
 COPY ./models /models
@@ -12,4 +14,4 @@ EXPOSE ${APP_PORT}
 
 VOLUME /models
 
-CMD uvicorn apart_cost_app:app --reload --port ${APP_PORT} --host 0.0.0.0
+CMD uvicorn app:app --reload --port ${APP_PORT} --host 0.0.0.0

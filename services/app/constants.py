@@ -10,7 +10,14 @@ REQUIRED_MODEL_PARAMS=['region_id',
     'rv_perc',
     'slider']
 
-MODEL_PATH='model.pkl'
+MODEL_PATH='../models/model.joblib'
+
+ADDITIONAL_VARIABLES = {'mean_rate_by_city': 3.615865,
+    'mean_rate_by_region': 3.558722,
+    'mean_rv_perc_by_city': 36.435853,
+    'mean_rv_perc_by_region': 36.044791,
+    'mean_ctr_sort_by_city': 0.986916,
+    'mean_ctr_sort_by_region': 0.995134}
 
 class ModelParams(BaseModel):
     region_id: float = 38.0
@@ -22,11 +29,5 @@ class ModelParams(BaseModel):
     ctr_sort: float = 1.3072
     rv_perc: float = 66.41
     slider: float = 1.0
-    mean_rate_by_city: float = 3.615865
-    mean_rate_by_region: float = 3.558722
-    mean_rv_perc_by_city: float = 36.435853
-    mean_rv_perc_by_region: float = 36.044791
-    mean_ctr_sort_by_city: float = 0.986916
-    mean_ctr_sort_by_region: float = 0.995134
 
 

@@ -6,7 +6,7 @@ import logging
 import operator
 import numpy as np
 import pandas as pd
-from constants import MODEL_PATH, REQUIRED_MODEL_PARAMS
+from constants import MODEL_PATH, REQUIRED_MODEL_PARAMS, ADDITIONAL_VARIABLES
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,21 +16,22 @@ class FastApiHandler:
         """Инициализация переменных класса."""
 
         # типы параметров запроса для проверки
-        self.param_types = 'model_params': dict
+        self.param_types = {
+            'ad_id': str,
+            'model_params': dict
+        }
 
-        # список необходимых параметров модели
-        self.required_model_params = REQUIRED_MODEL_PARAMS
-
-        self.load_cost_model(model_path=MODEL_PATH)
+        self.load_model(model_path=MODEL_PATH)
 
     def load_model(self, model_path: str):
-        """Загрузка обученной модели предсказания стоимости квартиры.
+        """Загрузка обученной модели прогноза совершения клика.
 
         Args:
             model_path (str): Путь до модели.
         """
         try:
             self.model = joblib.load(model_path)
+            logging.info('Model loaded successfully')
             return True
         except Exception as e:
             logging.error(f"Failed to load the model: {e}")
@@ -46,24 +47,12 @@ class FastApiHandler:
             float: вероятность клика.
         """
         # добавление расчётных параметров
-        model_input = {}
-
-        for feature_pair in FEATURE_OPERATIONS:
-            feature1, feature2, operation = feature_pair
-            if feature1 in model_params:
-                if feature2 is None:
-                    model_input[feature1] = model_params[feature1]
-                elif feature2 in model_params:
-                    if operation == operator.truediv:
-                        model_input[f'{feature1}_{feature2}_ratio'] = operation(model_params[feature1], model_params[feature2])
-                    elif operation == np.exp:
-                        model_input[f'{feature1}*exp({feature2})'] = model_params[feature1] * operation(model_params[feature2])
-                    else:
-                        model_input[f'{feature1}*{feature2}'] = operation(model_params[feature1], model_params[feature2])
-
+        model_input = model_params
+        model_input.update(ADDITIONAL_VARIABLES)
+        
         model_input = pd.DataFrame([model_input])
 
-        return self.model.predict(model_input)
+        return self.model.predict_proba(model_input)[0][1]
 
     def check_required_query_params(self, query_params: dict) -> bool:
         """Проверяем параметры запроса на наличие обязательного набора.
@@ -74,10 +63,10 @@ class FastApiHandler:
         Returns:
                 bool: True — если есть нужные параметры, False — в ином случае.
         """
-        if 'flat_id' not in query_params or 'model_params' not in query_params:
+        if 'ad_id' not in query_params or 'model_params' not in query_params:
             return False
 
-        if not isinstance(query_params['flat_id'], self.param_types['flat_id']):
+        if not isinstance(query_params['ad_id'], self.param_types['ad_id']):
             return False
 
         if not isinstance(query_params['model_params'], self.param_types['model_params']):
@@ -90,18 +79,18 @@ class FastApiHandler:
         """Проверяем параметры для получения предсказаний.
 
         Args:
-            total_model_params (dict): Параметры для получения предсказаний моделью.
+            model_params (dict): Параметры для получения предсказаний моделью.
 
         Returns:
             bool: True — если есть нужные параметры, False — иначе
         """
-        if set(model_params.keys()) == set(self.required_model_params):
+        if set(model_params.keys()) == set(REQUIRED_MODEL_PARAMS):
             return True
         return False
 
 
     def validate_params(self, params: dict) -> bool:
-        """Проверяем корректность параметров запроса и параметров модели.
+        """Проверка корректности параметров запроса и параметров модели.
 
         Args:
             params (dict): Словарь параметров запроса.
@@ -140,13 +129,14 @@ class FastApiHandler:
                 response = {"Error": "Problem with parameters"}
             else:
                 model_params = params['model_params']
-                flat_id = params['flat_id']
-                logging.info(f"Predicting for flat_id: {flat_id} and model_params:\n{model_params}")
+                ad_id = params['ad_id']
+                logging.info(f"Predicting for ad_id: {ad_id} and model_params:\n{model_params}")
                 # получение предсказания модели
-                predicted_apart_cost = self.apart_cost_predict(model_params).tolist()
+                probability = self.click_predict(model_params)
                 response = {
-                        "flat_id": flat_id, 
-                        "predicted_apart_cost": predicted_apart_cost
+                        "ad_id": ad_id,
+                        "click_probability": round(probability, 2),
+                        "click_prediction": int(probability > 0.5)
                     }
                 logging.info(response)
         except KeyError as e:
@@ -162,18 +152,17 @@ if __name__ == "__main__":
 
     # создание тестового запроса
     test_params = {
-        "flat_id": '333990123',
+        "ad_id": '99999999',
         "model_params": {
-                    "ceiling_height": 2.5,
-                    "building_type_int": 4,
-                    "age_of_building": 47,
-                    "distance_to_center": 10,
-                    "rooms": 2,
-                    "floors_total": 12,
-                    "living_area": 50,
-                    "kitchen_area": 10,
-                    "floor": 7,
-                    "flats_count": 500
+                    "region_id": 38.0,
+                    "city_id": 590.0,
+                    "tags_cont": 0.0,
+                    "tags_bhv": 0.5,
+                    "rubrica": 1.812,
+                    "rate": 1.7,
+                    "ctr_sort": 1.3072,
+                    "rv_perc": 66.41,
+                    "slider": 1.0
         }
     }
 

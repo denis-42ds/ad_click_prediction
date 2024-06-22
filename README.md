@@ -24,12 +24,23 @@ sh run_jupyter.sh
 
 ```
 git clone https://github.com/denis-42ds/ad_click_prediction.git
-cd ad_click_prediction
+cd ad_click_prediction/services
 docker compose up --build
 ```
 
 Для просмотра документации API и совершения тестовых запросов пройти по ссылке: [http://127.0.0.1:8081/docs](http://127.0.0.1:8081/docs)
-<br>Для остановки приложения: ```docker compose down```
+<br>Доступ к экспозиции метрик `Prometheus`: [http://localhost:8081/metrics](http://localhost:8081/metrics)
+<br>Доступ к веб-интерфейсу `Prometheus`: [http://localhost:9090](http://localhost:9090)
+<br>Доступ к веб-интерфейсу `Grafana`: [http://localhost:3000](http://localhost:3000)
+<br>Для остановки приложения: ```docker compose down``` или `Press CTRL+C to quit`
+
+Демонстрация работы приложения:
+<video width="320" height="240" controls>
+  <source src="assets/runapp.webm" type="video/webm">
+  <source src="assets/runapp.mp4" type="video/mp4">
+  <source src="assets/runapp.ogv" type="video/ogg">
+  Your browser does not support the video tag.
+</video>
 
 ## Описание проекта
 <br>Требуется получить на выходе прогноз с высокой точностью вероятности клика по рекламному объявлению.

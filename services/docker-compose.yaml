@@ -1,5 +1,5 @@
 services:
-  apart_cost_app:
+  app_click_pred:
     env_file:
       - ./.env
     build:

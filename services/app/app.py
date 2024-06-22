@@ -2,9 +2,9 @@ import os
 import uvicorn
 from fastapi import FastAPI
 from dotenv import load_dotenv
+from constants import ModelParams
 from prometheus_client import Counter, Histogram
-from constants import MIN_APART_COST, ModelParams
-from apart_cost_fastapi_handler import FastApiHandler
+from app_fastapi_handler import FastApiHandler
 from prometheus_fastapi_instrumentator import Instrumentator
 
 load_dotenv(dotenv_path="../.env")
@@ -16,35 +16,35 @@ app.handler = FastApiHandler()
 instrumentator = Instrumentator()
 instrumentator.instrument(app).expose(app)
 
-c = Counter('low_preds', 'forecast counter below 11,000,000')
+positive_counter = Counter('positive_preds', 'positive class prediction counter')
 
 main_app_predictions = Histogram(
     "main_app_predictions",
     "Histogram of predictions",
-    buckets=(1e7, 1.5e7, 2e7, 2.5e7, 3e7)
+    buckets=(0.5, 0.63, 0.75, 0.88, 1)
 )
 
-@app.post("/api/cost/") 
-def get_prediction_for_item(flat_id: str, model_params: ModelParams):
-    """Функция для получения прогноза стоимости квартиры.
+@app.post("/api/app/") 
+def get_prediction_for_item(ad_id: str, model_params: ModelParams):
+    """Функция для получения прогноза клика по рекламному объявлению.
 
     Args:
-        flat_id (str): Идентификатор квартиры.
-        model_params (ModelParams): Параметры квартиры, которые нужно передать в модель.
+        ad_id (str): Идентификатор объявления.
+        model_params (ModelParams): Параметры объявления, которые нужно передать в модель.
 
     Returns:
-        dict: Предсказание стоимости квартиры с заданными параметрами.
+        dict: Предсказание клика по объявлению с заданными параметрами.
     """
     all_params = {
-        "flat_id": flat_id,
+        "ad_id": ad_id,
         "model_params": model_params.dict()
     }
 
-    prediction = app.handler.apart_cost_predict(model_params.dict())
-    main_app_predictions.observe(prediction[0])
+    prediction = app.handler.click_predict(model_params.dict())
+    main_app_predictions.observe(prediction)
 
-    if prediction[0] < MIN_APART_COST:
-        c.inc()
+    if prediction > 0.5:
+        positive_counter.inc()
 
     return app.handler.handle(all_params)
 

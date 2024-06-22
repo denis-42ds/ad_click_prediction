@@ -3,4 +3,4 @@ docker container run \
 -d \
 --volume=./models:/models \
 --env-file .env \
-apart_cost_pred:v1
+app_click_pred:v1
