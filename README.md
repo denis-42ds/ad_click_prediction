@@ -1,6 +1,6 @@
 # Название проекта: Ad click prediction
 
-## Статус проекта: в работе
+## Статус проекта: завершён
 
 ## Заказчик: natiscope
 
@@ -65,7 +65,8 @@ docker compose up --build
 - python: pandas, seaborn, matplotlib, phik, category_encoders, LightGBM;
 - mlflow;
 - postgresql;
-- bash
+- bash;
+- fastapi, grafana, prometheus
 
 ## Заключение:
 
