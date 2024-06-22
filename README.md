@@ -34,13 +34,7 @@ docker compose up --build
 <br>Доступ к веб-интерфейсу `Grafana`: [http://localhost:3000](http://localhost:3000)
 <br>Для остановки приложения: ```docker compose down``` или `Press CTRL+C to quit`
 
-Демонстрация работы приложения:
-<video width="320" height="240" controls>
-  <source src="assets/runapp.webm" type="video/webm">
-  <source src="assets/runapp.mp4" type="video/mp4">
-  <source src="assets/runapp.ogv" type="video/ogg">
-  Your browser does not support the video tag.
-</video>
+[Демонстрация работы приложения](https://drive.google.com/file/d/1EPmL2vz5csGTA4XTIGafRKn77hHohFZq/view?usp=sharing)
 
 ## Описание проекта
 <br>Требуется получить на выходе прогноз с высокой точностью вероятности клика по рекламному объявлению.
